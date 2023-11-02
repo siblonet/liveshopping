@@ -1,14 +1,19 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-
-const port = process.env.PORT || 3000;
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(port);
-  console.log(`App started. Listening on port ${port}`);
+  app.use(bodyParser.json({limit: '1000mb'}));
+  const options = {
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+    credentials: true
+  };
+
+  app.enableCors(options);
+  await app.listen(process.env.PORT || 3000);
 }
-bootstrap().catch((err) => {
-  console.log(`Fatal error during initialization:`, err);
-  process.exit(1);
-});
+bootstrap();
