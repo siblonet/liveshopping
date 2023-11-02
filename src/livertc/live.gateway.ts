@@ -41,9 +41,11 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @SubscribeMessage('send_hoim')
     async identity(@MessageBody() data: any) {
         if (data.author == "admin") {
+            console.log("if   ", data);
             this.server.emit(data.to, data.message);
 
         } else {
+            console.log("else", data);
             this.server.emit("admin", data.message);
             this.server.emit(data.to, data.message);
 
