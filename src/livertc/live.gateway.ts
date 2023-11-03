@@ -7,7 +7,9 @@ import {
     OnGatewayDisconnect,
     MessageBody
 } from '@nestjs/websockets';
+import axios from 'axios';
 import { Server } from 'socket.io';
+
 
 
 
@@ -24,57 +26,55 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
 
-
-    constructor() { }
     ids = [];
 
     getConnectedSockets() {
         return this.ids
     }
 
+
     async handleConnection(client: any) {
-        const doo = { connecteds: client.id }
+        const doo = { connecteds: client.id, author: "" }
         this.ids.push(doo)
+        this.server.emit("admina", client.id);
+    }
+
+
+    @SubscribeMessage('dasboard')
+    async identity(@MessageBody() data: any) {
+        if (data.author == "admina") {
+            this.ids.find(item => item.connecteds === data.id).author = "admin";
+        }
 
     }
 
     @SubscribeMessage('send_hoim')
-    async identity(@MessageBody() data: any) {
-        if (data.author == "admin") {
-            console.log("if   ", data);
+    async messages(@MessageBody() data: any) {
+        if (data.author == "admina") {
             this.server.emit(data.to, data.message);
 
         } else {
-            console.log("else", data);
-            this.server.emit("admin", data.message);
-            this.server.emit(data.to, data.message);
+            const prevIndex = this.ids.find(item => item.author === "admin");
+            if (prevIndex) {
+                this.server.emit("admina", data);
+
+            } else {
+                const dato = {
+                    "sound": "default",
+                    "title": data.to,
+                    "body": data.message,
+                }
+                axios.post("https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken", dato).then().catch(err => {
+                    console.error(err);
+                });
+            }
 
         }
     }
-
 
     async handleDisconnect(client: any) {
         const prevIndex = this.ids.findIndex(item => item.connecteds === client.id);
         this.ids.splice(prevIndex, 1);
     }
-
-    async onGba_Gba(to_and: any, notifi_to: any) {
-        /*
-        const dato = {
-            "to": notifi_to,
-            "sound": "default",
-            "title": "Privée",
-            "body": "Demande de livraison",
-        }
-        axios.post("https://exp.host/--/api/v2/push/send", dato).then(() => {
-        }).catch(err => {
-            // Handle Error Here
-            console.error(err);
-        });*/
-        this.server.emit(to_and);
-    }
-
-
-
 
 }

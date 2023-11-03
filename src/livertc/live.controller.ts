@@ -7,7 +7,7 @@ export class LiveController {
     constructor(private readonly doorGateway: LiveGateway) { }
 
     @Get()
-    getConnectedSockets(): any[] {
+    getConnectedSockets(){
         return this.doorGateway.getConnectedSockets();
     }
 }
