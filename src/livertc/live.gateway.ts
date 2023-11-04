@@ -17,7 +17,7 @@ import { Server } from 'socket.io';
 @WebSocketGateway({
     transports: ['websocket', 'polling'],
     cors: {
-        origin: '*:*',
+        origin: '*',
         methods: ['GET', 'POST'],
     }
 })
