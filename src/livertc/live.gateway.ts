@@ -53,17 +53,18 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
     async messages(@MessageBody() data: any) {
         if (data.author == "admina") {
             this.server.emit(data.to, data);
-
+            return true
         } else {
-            const prevIndex = this.ids.find(item => item.author === "admin");
+            const prevIndex = this.ids.find(item => item.author == "admin");
             if (prevIndex) {
                 this.server.emit("admina", data);
-                const clienexi = this.clientTo.find(item => item.to === data.to);
+                const clienexi = this.clientTo.find(item => item.to == data.to);
                 if (clienexi) {
                     clienexi.message = `${clienexi.message}\n${data.message}`;
                 } else {
                     this.clientTo.push(data)
                 }
+                return true
 
             } else {
                 const dato = {
@@ -71,9 +72,10 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     "title": data.to,
                     "body": data.message,
                 }
-                axios.post("https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken" /*"http://localhost:3001/people/sendexpopushtoken*/, dato).then().catch(err => {
+                axios.post("http://localhost:3001/people/sendexpopushtoken" /*"https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken*/, dato).then().catch(err => {
                     console.error(err);
                 });
+                return false
             }
 
         }
