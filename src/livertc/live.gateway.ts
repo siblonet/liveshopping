@@ -27,16 +27,17 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
     server: Server;
 
     ids = [];
+    clientTo = [];
 
     getConnectedSockets() {
-        return this.ids
+        return [...this.ids, ...this.clientTo]
     }
 
 
     async handleConnection(client: any) {
         const doo = { connecteds: client.id, author: "" }
         this.ids.push(doo)
-        this.server.emit("admina", client.id);
+        this.server.emit("nouVeau", client.id);
     }
 
 
@@ -45,18 +46,24 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (data.author == "admina") {
             this.ids.find(item => item.connecteds === data.id).author = "admin";
         }
-
+        return this.clientTo;
     }
 
     @SubscribeMessage('send_hoim')
     async messages(@MessageBody() data: any) {
         if (data.author == "admina") {
-            this.server.emit(data.to, data.message);
+            this.server.emit(data.to, data);
 
         } else {
             const prevIndex = this.ids.find(item => item.author === "admin");
             if (prevIndex) {
                 this.server.emit("admina", data);
+                const clienexi = this.clientTo.find(item => item.to === data.to);
+                if (clienexi) {
+                    clienexi.message = `${clienexi.message}\n${data.message}`;
+                } else {
+                    this.clientTo.push(data)
+                }
 
             } else {
                 const dato = {
@@ -64,7 +71,7 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     "title": data.to,
                     "body": data.message,
                 }
-                axios.post("https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken", dato).then().catch(err => {
+                axios.post("https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken" /*"http://localhost:3001/people/sendexpopushtoken*/, dato).then().catch(err => {
                     console.error(err);
                 });
             }
