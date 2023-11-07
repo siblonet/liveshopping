@@ -43,9 +43,15 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     @SubscribeMessage('dasboard')
     async identity(@MessageBody() data: any) {
-        if (data.author == "admina") {
-            this.ids.find(item => item.connecteds === data.id).author = "admin";
+        const adminIS = this.ids.find(item => item.author == "admin");
+        if (!adminIS && data.author == "admina") {
+            this.server.emit("isDamin", "enline");
+            this.ids.find(item => item.connecteds == data.id).author = "admin";
+
+        } else if (data.author == "admina") {
+            this.ids.find(item => item.connecteds == data.id).author = "admin";
         }
+
         return this.clientTo;
     }
 
@@ -72,7 +78,7 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     "title": data.to,
                     "body": data.message,
                 }
-                axios.post("http://localhost:3001/people/sendexpopushtoken" /*"https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken*/, dato).then().catch(err => {
+                axios.post("https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken" /*"http://localhost:3001 https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken*/, dato).then().catch(err => {
                     console.error(err);
                 });
                 return false
@@ -82,8 +88,12 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     async handleDisconnect(client: any) {
-        const prevIndex = this.ids.findIndex(item => item.connecteds === client.id);
+        const prevIndex = this.ids.findIndex(item => item.connecteds == client.id);
         this.ids.splice(prevIndex, 1);
+        const adminIS = this.ids.find(item => item.author == "admin");
+        if (!adminIS) {
+            this.server.emit("isDamin", "horline");
+        }
     }
 
 }
