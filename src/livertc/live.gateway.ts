@@ -123,11 +123,11 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
             return true
 
         } else {
-
             const dato = {
                 "sound": "default",
                 "title": data.to,
                 "body": data.message,
+                data: { data: data }
             };
 
             const urlo = "http://localhost:3001/people/sendexpopushtoken";
