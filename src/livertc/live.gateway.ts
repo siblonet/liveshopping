@@ -134,7 +134,7 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
             const urpu = "https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken";
 
             try {
-                axios.post(urlo, dato).then().catch(err => {
+                axios.post(urpu, dato).then().catch(err => {
                     console.error(err);
                 });
             } catch (error) {
