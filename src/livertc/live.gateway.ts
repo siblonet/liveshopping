@@ -5,7 +5,8 @@ import {
     WebSocketServer,
     OnGatewayConnection,
     OnGatewayDisconnect,
-    MessageBody
+    MessageBody,
+    ConnectedSocket,
 } from '@nestjs/websockets';
 import axios from 'axios';
 import { Server } from 'socket.io';
@@ -31,67 +32,124 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     getConnectedSockets() {
         return [...this.ids, ...this.clientTo]
-    }
+    };
 
+    getMessages() {
+        return this.clientTo;
+    };
 
     async handleConnection(client: any) {
-        const doo = { connecteds: client.id, author: "" }
+        /*const doo = { connecteds: client.id, author: "" };
         this.ids.push(doo)
-        this.server.emit("nouVeau", client.id);
-    }
+        this.server.emit("nouVeau", client.id);*/
+        //console.log(client.id);
+    };
+
+
+    //"Eye_cLPcTFAxJBvkAAAE eifhie"
+
+    async SendOrder(order: any) {
+
+        this.server.emit("orders", order);
+    };
+
 
 
     @SubscribeMessage('dasboard')
-    async identity(@MessageBody() data: any) {
+    async identity(@MessageBody() data: any, @ConnectedSocket() client: any) {
         const adminIS = this.ids.find(item => item.author == "admin");
         if (!adminIS && data.author == "admina") {
+            const doo = { connecteds: data.id, author: "admina" };
+            this.ids.push(doo);
             this.server.emit("isDamin", "enline");
-            this.ids.find(item => item.connecteds == data.id).author = "admin";
 
         } else if (data.author == "admina") {
-            this.ids.find(item => item.connecteds == data.id).author = "admin";
+            const doo = { connecteds: data.id, author: "admina" };
+            this.ids.push(doo);
         }
 
-        return this.clientTo;
-    }
 
-    @SubscribeMessage('send_hoim')
-    async messages(@MessageBody() data: any) {
-        if (data.author == "admina") {
-            this.server.emit(data.to, data);
-            return true
+        if (this.ids.length > 4) {
+            this.server.emit("disconnecto", "discon");
+            client.disconnect();
+            const prevIndex = this.ids.findIndex(item => item.connecteds == client.id);
+            this.ids.splice(prevIndex, 1);
+            
+            /*;
+            this.server.disconnectSockets();
+            this.clientTo = [];
+            this.ids = [];
+            */
+
+            return this.clientTo;
         } else {
-            const prevIndex = this.ids.find(item => item.author == "admin");
-            if (prevIndex) {
-                this.server.emit("admina", data);
-                const clienexi = this.clientTo.find(item => item.to == data.to);
-                if (clienexi) {
-                    clienexi.message = `${clienexi.message}\n${data.message}`;
-                } else {
-                    this.clientTo.push(data)
-                }
-                return true
+            return this.clientTo;
+        }
+    };
 
+
+    @SubscribeMessage('disconnector')
+    async diconnector(@MessageBody() data: any, @ConnectedSocket() client: any) {
+        console.log("diconnected", data, client.id);
+
+        //cleint.disconnect();
+        this.server.disconnectSockets();
+        const prevIndex = this.ids.findIndex(item => item.connecteds == client.id);
+        this.ids.splice(prevIndex, 1);
+        /*this.clientTo = [];
+        this.ids = [];*/
+
+    };
+
+
+    @SubscribeMessage('send_toclient')
+    async adminMessages(@MessageBody() data: any) {
+
+        this.server.emit(data.to, data);
+    };
+
+
+
+    @SubscribeMessage('send_toadmin')
+    async clientMessages(@MessageBody() data: any) {
+        if (this.ids.length > 0) {
+            this.server.emit("admina", data);
+            const clienexi = this.clientTo.find(item => item.to == data.to);
+            if (clienexi) {
+                clienexi.message = `${clienexi.message}\n${data.message}`;
             } else {
-                const dato = {
-                    "sound": "default",
-                    "title": data.to,
-                    "body": data.message,
-                }
-                axios.post("https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken" /*"http://localhost:3001 https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken*/, dato).then().catch(err => {
+                this.clientTo.push(data)
+            }
+            return true
+
+        } else {
+
+            const dato = {
+                "sound": "default",
+                "title": data.to,
+                "body": data.message,
+            };
+
+            const urlo = "http://localhost:3001/people/sendexpopushtoken";
+            const urpu = "https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken";
+
+            try {
+                axios.post(urlo, dato).then().catch(err => {
                     console.error(err);
                 });
-                return false
+            } catch (error) {
+                null
             }
 
+            return false
         }
-    }
+
+    };
 
     async handleDisconnect(client: any) {
         const prevIndex = this.ids.findIndex(item => item.connecteds == client.id);
         this.ids.splice(prevIndex, 1);
-        const adminIS = this.ids.find(item => item.author == "admin");
-        if (!adminIS) {
+        if (this.ids.length < 1) {
             this.server.emit("isDamin", "horline");
         }
     }

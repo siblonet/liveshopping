@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { LiveGateway } from './live.gateway';
 
 
@@ -7,7 +7,19 @@ export class LiveController {
     constructor(private readonly doorGateway: LiveGateway) { }
 
     @Get()
-    getConnectedSockets(){
+    getConnectedSockets() {
         return this.doorGateway.getConnectedSockets();
+    };
+
+    @Get("messages")
+    getMessages() {
+        return this.doorGateway.getMessages();
+    };
+
+
+    @Post()
+    async SendOrder(@Body() order: any): Promise<void> {
+        return this.doorGateway.SendOrder(order);
     }
+
 }
