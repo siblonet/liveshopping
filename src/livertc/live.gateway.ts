@@ -125,7 +125,7 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
         } else {
             const dato = {
                 "sound": "default",
-                "title": data.to,
+                "title": data.name ? data.name : "Demande d'aide",
                 "body": data.message,
                 data: { data: data }
             };
