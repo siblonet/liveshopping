@@ -1,4 +1,5 @@
 export interface Chats {
+  id: string;
   to: string;
   owner: string;
   admin: string;
