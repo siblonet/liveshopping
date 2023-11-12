@@ -66,7 +66,7 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.ids.push(doo);
             this.server.emit("isDamin", "enline");
 
-        } else if (data.author == "admina") {
+        } else if (adminIS && data.author == "admina") {
             const doo = { connecteds: data.id, author: "admina" };
             this.ids.push(doo);
         }
