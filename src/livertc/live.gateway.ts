@@ -129,7 +129,7 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
             const clienexi = this.clientTo.find(item => item.to == data.to);
             if (clienexi) {
                 clienexi.body.push({
-                    id: clienexi.body.length,
+                    id: data.body[0].id,
                     chat: data.body[0].chat,
                 });
             } else {

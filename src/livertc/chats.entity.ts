@@ -4,7 +4,7 @@ export interface Chats {
   admin: string;
   name: string;
   body: [{
-    id: number;
+    id: string;
     chat: string;
   }];
 }
