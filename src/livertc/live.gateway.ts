@@ -10,6 +10,7 @@ import {
 } from '@nestjs/websockets';
 import axios from 'axios';
 import { Server } from 'socket.io';
+import { Chats } from './chats.entity';
 
 
 
@@ -28,14 +29,16 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
     server: Server;
 
     ids = [];
-    clientTo = [];
+    clientTo: Chats[];
 
     getConnectedSockets() {
         return [...this.ids, ...this.clientTo]
     };
 
-    getMessages() {
-        return this.clientTo;
+    getMessages(id: String) {
+        const client = this.clientTo.filter(item => item.owner == id);
+
+        return client;
     };
 
     async handleConnection(client: any) {
@@ -48,9 +51,9 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     //"Eye_cLPcTFAxJBvkAAAE eifhie"
 
-    async SendOrder(order: any) {
+    async SendOrder(order: any, owner: any) {
 
-        this.server.emit("orders", order);
+        this.server.emit(owner, order);
     };
 
 
@@ -74,7 +77,7 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
             client.disconnect();
             const prevIndex = this.ids.findIndex(item => item.connecteds == client.id);
             this.ids.splice(prevIndex, 1);
-            
+
             /*;
             this.server.disconnectSockets();
             this.clientTo = [];
@@ -90,7 +93,7 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     @SubscribeMessage('disconnector')
     async diconnector(@MessageBody() data: any, @ConnectedSocket() client: any) {
-        console.log("diconnected", data, client.id);
+       // console.log("diconnected", data, client.id);
 
         //cleint.disconnect();
         this.server.disconnectSockets();
@@ -104,8 +107,17 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     @SubscribeMessage('send_toclient')
     async adminMessages(@MessageBody() data: any) {
+        const clienexi = this.clientTo.find(item => item.to == data.to);
+        if (clienexi) {
+            if (!clienexi.admin) {
+                clienexi.admin = data.me
+            } else if(clienexi.admin == data.me) {
+                this.server.emit(data.to, data);
 
-        this.server.emit(data.to, data);
+            }
+        } else {
+            this.server.emit(data.to, data);
+        }
     };
 
 
@@ -116,7 +128,10 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.server.emit("admina", data);
             const clienexi = this.clientTo.find(item => item.to == data.to);
             if (clienexi) {
-                clienexi.message = `${clienexi.message}\n${data.message}`;
+                clienexi.body.push({
+                    id: clienexi.body.length,
+                    chat: data.body[0].chat,
+                });
             } else {
                 this.clientTo.push(data)
             }
@@ -126,8 +141,8 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
             const dato = {
                 "sound": "default",
                 "title": data.name ? data.name : "Demande d'aide",
-                "body": data.message,
-                data: { data: data }
+                "body": data.body[0].chat,
+                data: data
             };
 
             const urlo = "http://localhost:3001/people/sendexpopushtoken";
