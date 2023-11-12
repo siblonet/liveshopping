@@ -83,17 +83,20 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.clientTo = [];
             this.ids = [];
             */
+            const dataMess = this.clientTo.filter(item => item.owner == data.owner);
 
-            return this.clientTo;
+            return dataMess;
         } else {
-            return this.clientTo;
+            const dataMess = this.clientTo.filter(item => item.owner == data.owner);
+
+            return dataMess;
         }
     };
 
 
     @SubscribeMessage('disconnector')
     async diconnector(@MessageBody() data: any, @ConnectedSocket() client: any) {
-       // console.log("diconnected", data, client.id);
+        // console.log("diconnected", data, client.id);
 
         //cleint.disconnect();
         this.server.disconnectSockets();
@@ -111,7 +114,7 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (clienexi) {
             if (!clienexi.admin) {
                 clienexi.admin = data.me
-            } else if(clienexi.admin == data.me) {
+            } else if (clienexi.admin == data.me) {
                 this.server.emit(data.to, data);
 
             }
