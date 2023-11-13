@@ -29,7 +29,7 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
     server: Server;
 
     ids = [];
-    clientTo: Chats[];
+    clientTo: Chats[] = [];
 
     getConnectedSockets() {
         return [...this.ids, ...this.clientTo]
@@ -49,7 +49,6 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
     };
 
 
-    //"Eye_cLPcTFAxJBvkAAAE eifhie"
 
     async SendOrder(order: any, owner: any) {
 
