@@ -12,7 +12,7 @@ export class LiveController {
     };
 
     @Get("messages/:id")
-    getMessages(@Param('id') id: String) {
+    getMessages(@Param('id') id: string) {
         return this.doorGateway.getMessages(id);
     };
 

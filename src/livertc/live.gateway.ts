@@ -35,7 +35,7 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return [...this.ids, ...this.clientTo]
     };
 
-    getMessages(id: String) {
+    getMessages(id: string) {
         const client = this.clientTo.filter(item => item.owner == id);
 
         return client;
@@ -146,7 +146,6 @@ export class LiveGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 "body": data.body[0].chat,
                 data: data
             };
-
             const urlo = `http://localhost:3001/people/sendexpopushtoken/${data.owner}`;
             const urpu = `https://zany-plum-bear.cyclic.cloud/people/sendexpopushtoken/${data.owner}`;
 
